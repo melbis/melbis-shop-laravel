@@ -1,58 +1,101 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Melbis Shop Laravel Demo
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+This repository contains demonstration scripts showcasing how to seamlessly integrate the high-performance **Melbis Shop 6.5.0** core with the modern **Laravel** framework. 
 
-## About Laravel
+It provides a practical example of how to leverage Melbis Shop's powerful backend logic (cart calculations, options, database operations) while utilizing Laravel's routing, controllers, and Blade templating engine for the frontend presentation.
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## ⚙️ Installation Guide
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+Follow these steps to set up the demonstration project on your local server.
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+### Prerequisites
+* PHP 8.3 or higher
+* [Composer](https://getcomposer.org/) installed globally
 
-## Learning Laravel
+### Step 1: Download the Project
+Download the archive of this demonstration project from GitHub:
+[https://github.com/melbis/melbis-shop-laravel](https://github.com/melbis/melbis-shop-laravel) and extract it to your web server directory.
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
-
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
-
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
-
-## Agentic Development
-
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
-
+### Step 2: Install Melbis Core
+In the root directory of your project, install the stable Melbis Shop core package via Composer:
 ```bash
-composer require laravel/boost --dev
-
-php artisan boost:install
+composer require melbis/melbis-shop
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+### Step 3: Install Laravel Dependencies
+Navigate to the `laravel` subfolder and install the framework dependencies:
+```bash
+cd laravel
+composer install
+```
 
-## Contributing
+### Step 4: Configure Autoloading (The Bridge)
+To allow Laravel to access the Melbis core classes, you need to update the autoloader. Open the `laravel/composer.json` file and add the Melbis namespace to the `psr-4` section:
+```json
+"autoload": {
+    "psr-4": {
+        "App\\": "app/",
+        "Database\\Factories\\": "database/factories/",
+        "Database\\Seeders\\": "database/seeders/",
+        "Melbis\\MelbisShop\\": "../core/class/"
+    }
+}
+```
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+After saving the file, regenerate the Composer autoload files:
+```bash
+composer dump-autoload
+```
 
-## Code of Conduct
+### Step 5: Environment Setup
+Copy the example environment file and generate your application key:
+```bash
+cp .env.example .env
+php artisan key:generate
+```
+*Note: Make sure your database credentials are correctly set up. The Melbis Core will read its configuration directly from the root `config.json` file via the `MelbisLogic` service.*
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+---
 
-## Security Vulnerabilities
+## 🏗️ Architecture Overview
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+This project uses a hybrid architecture that combines the classic direct-control procedural paradigm of Melbis Shop with Laravel's strict MVC (Model-View-Controller) structure.
 
-## License
+### 1. The Bridge (`App\Services\MelbisLogic`)
+This is the heart of the integration. Instead of mixing procedural code inside Laravel controllers, we use the **Bridge Pattern**. The `MelbisLogic` service acts as a wrapper that:
+* Initializes the global Melbis environment (`$gParser`, `$gDb`).
+* Reads the legacy `config.json` dynamically.
+* Converts procedural core errors into standard Laravel Exceptions.
+* Provides a clean `call()` method to execute native Melbis functions (e.g., `$melbis->call('MELBIS_INC_LOGIC_order_calc', [$version])`).
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+### 2. Thin Controllers (`App\Http\Controllers`)
+Laravel controllers (like `CartController`) act purely as traffic directors. They intercept HTTP requests, use Dependency Injection to call the `MelbisLogic` service, handle Laravel's native sessions, and return JSON responses or views. They contain **zero** business or mathematical logic.
+
+### 3. Native Modules (Melbis Core)
+All the heavy lifting—database queries, cart calculations, discounts, multithreading, and option processing—is handled safely within the native Melbis `/units/` and `/core/` directories. This ensures 100% mathematical consistency with the Windows desktop application.
+
+### 4. Dumb Views (`resources/views`)
+The frontend is built using Laravel Blade templates and Bootstrap 5. Views receive pre-calculated arrays from the controllers and simply render the HTML, keeping the presentation layer completely separated from the data processing layer.
+
+---
+
+## 🔗 Quick Links
+
+* 🌍 **Official Website:** [melbis.com](https://melbis.com/)
+* 💰 **Prices & Licenses:** [melbis.com/price](https://melbis.com/en/price/)
+* 📀 **Installation Packages:** [melbis.com/download](https://melbis.com/en/download/)
+* 💻 **GitHub Releases:** [melbis/melbis-shop/releases](https://github.com/melbis/melbis-shop/releases)
+* 🐳 **Docker Hub:** [melbis/melbis-shop](https://hub.docker.com/r/melbis/melbis-shop)
+* 📦 **Packagist (Composer):** [melbis/melbis-shop](https://packagist.org/packages/melbis/melbis-shop)
+
+## 💬 Community & Examples
+
+* 📢 **Telegram News:** [@melbis_shop](https://t.me/melbis_shop)
+* 📺 **YouTube Tutorials:** [Melbis-Shop Channel](https://www.youtube.com/@Melbis-Shop)
+* 🖼️ **Screenshots:** [View gallery](https://melbis.com/en/screenshots/)
+* 📖 **Documentation:** [Installation & Setup](https://melbis.com/en/dev/install/prepare/)
+* 🏆 **Flagship Example Store:** [Astroscope.com.ua](https://astroscope.com.ua/) *(A live example of a high-load store powered by Melbis Shop)*
+
+---
+*Built for speed, scaled for business.*
+

@@ -4,7 +4,7 @@ This repository contains demonstration scripts showcasing how to seamlessly inte
 
 It provides a practical example of how to leverage Melbis Shop's powerful backend logic (cart calculations, options, database operations) while utilizing Laravel's routing, controllers, and Blade templating engine for the frontend presentation.
 
-## ⚙️ Demo
+## 🚀 Demo
 
 [https://laravel.melbis.com/](https://laravel.melbis.com/)
 

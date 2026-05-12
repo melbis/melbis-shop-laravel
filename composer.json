@@ -25,7 +25,10 @@
             "Database\\Factories\\": "database/factories/",
             "Database\\Seeders\\": "database/seeders/",
 	    "Melbis\\MelbisShop\\": "../core/class/"
-        }
+        },
+        "files": [
+            "app/Services/Melbis.php"
+        ]
     },
     "autoload-dev": {
         "psr-4": {

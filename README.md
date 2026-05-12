@@ -70,7 +70,7 @@ This is the heart of the integration. Instead of mixing procedural code inside L
 * Initializes the global Melbis environment (`$gParser`, `$gDb`).
 * Reads the legacy `config.json` dynamically.
 * Converts procedural core errors into standard Laravel Exceptions.
-* Provides a clean `call()` method to execute native Melbis functions (e.g., `$melbis->call('MELBIS_INC_LOGIC_order_calc', [$version])`).
+* Provides a clean `call()` method to execute native Melbis functions (e.g., `$melbis->call('MELBIS_INC_LOGIC_order_calc', [$user_id ,$version])`).
 
 ### 2. Thin Controllers (`App\Http\Controllers`)
 Laravel controllers (like `CartController`) act purely as traffic directors. They intercept HTTP requests, use Dependency Injection to call the `MelbisLogic` service, handle Laravel's native sessions, and return JSON responses or views. They contain **zero** business or mathematical logic.

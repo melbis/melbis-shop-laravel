@@ -22,7 +22,7 @@ class CartController extends Controller
 
         // Add and Calc
         $version = $melbis->call('MELBIS_INC_LOGIC_order_goods_add', [$version, $store_id]);        
-        $version = $melbis->call('MELBIS_INC_LOGIC_order_calc', [$version]);
+        $version = $melbis->call('MELBIS_INC_LOGIC_order_calc', [null, $version]);
 
         // Save
         session(['melbis_version' => $version]);    
@@ -55,7 +55,7 @@ class CartController extends Controller
         if ($version) 
         {
             $version = $melbis->call('MELBIS_INC_LOGIC_order_goods_remove', [$version, $store_id]);                     
-            $version = $melbis->call('MELBIS_INC_LOGIC_order_calc', [$version]);
+            $version = $melbis->call('MELBIS_INC_LOGIC_order_calc', [null, $version]);
             
             session(['melbis_version' => $version]);
         }
@@ -87,7 +87,7 @@ class CartController extends Controller
         }
 
         // Call Melbis core to create the order in DB
-        $result = $melbis->call('MELBIS_INC_LOGIC_order_edit', [$version]);
+        $result = $melbis->call('MELBIS_INC_LOGIC_order_edit', [null, $version]);
 
         // Check if core returned an error during creation
         if ($result['value'] !== 'OK') 
